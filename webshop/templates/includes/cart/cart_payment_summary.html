@@ -50,6 +50,20 @@
 					<td class="bill-content net-total text-right">{{ doc.get_formatted("grand_total") }}</td>
 				</tr>
 			</table>
+			<div class="frappe-control">
+                <div class="form-group">
+                    <label class="control-label" for="attachments">{{ _("Attachments") }}</label>
+                    <div class="control-input-wrapper">
+                        <input type="file" class="form-control" name="attachments" id="attachments" multiple>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="notes">{{ _("Notes") }}</label>
+                    <div class="control-input-wrapper">
+                        <textarea class="form-control" name="notes" id="notes" rows="4"></textarea>
+                    </div>
+                </div>
+            </div>
 		{% endif %}
 
 		{% if cart_settings.enable_checkout %}
