@@ -140,8 +140,8 @@ def place_order():
 
 
 @frappe.whitelist()
-def request_for_quotation():
-	quotation = _get_cart_quotation()
+def request_for_quotation(notes):
+	quotation = _get_cart_quotation(notes=notes)
 	quotation.flags.ignore_permissions = True
 
 	if get_shopping_cart_settings().save_quotations_as_draft:
@@ -366,7 +366,7 @@ def decorate_quotation_doc(doc):
 	return doc
 
 
-def _get_cart_quotation(party=None):
+def _get_cart_quotation(party=None, notes=None):
 	"""Return the open Quotation of type "Shopping Cart" or make a new one"""
 	if not party:
 		party = get_party()
@@ -386,6 +386,7 @@ def _get_cart_quotation(party=None):
 
 	if quotation:
 		qdoc = frappe.get_doc("Quotation", quotation[0].name)
+		qdoc.custom_customer_notes = notes
 	else:
 		company = frappe.db.get_single_value("Webshop Settings", "company")
 		qdoc = frappe.get_doc(
@@ -397,6 +398,7 @@ def _get_cart_quotation(party=None):
 				"company": company,
 				"order_type": "Shopping Cart",
 				"status": "Draft",
+				"custom_customer_notes": notes,
 				"docstatus": 0,
 				"__islocal": 1,
 				"party_name": party.name,
