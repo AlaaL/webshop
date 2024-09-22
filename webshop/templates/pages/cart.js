@@ -168,28 +168,57 @@ $.extend(shopping_cart, {
 	request_quotation: function(btn) {
 		shopping_cart.freeze();
 
+        const attachments = $("#attachments")[0].files;
+        const notes = $("#notes").val();
+       
 		return frappe.call({
-			type: "POST",
-			method: "webshop.webshop.shopping_cart.cart.request_for_quotation",
-			btn: btn,
-			callback: function(r) {
-				if(r.exc) {
-					shopping_cart.unfreeze();
-					var msg = "";
-					if(r._server_messages) {
-						msg = JSON.parse(r._server_messages || []).join("<br>");
-					}
+            type: "POST",
+            method: "webshop.webshop.shopping_cart.cart.request_for_quotation",
+            btn: btn,
+            args : {
+				notes : $("#notes").val(),
+			},
+            callback: function(r) {
+                if(r.exc) {
+                    shopping_cart.unfreeze();
+                    var msg = "";
+                    if(r._server_messages) {
+                        msg = JSON.parse(r._server_messages || []).join("<br>");
+                    }
+    
+                    $("#cart-error")
+                        .empty()
+                        .html(msg || frappe._("Something went wrong!"))
+                        .toggle(true);
+                } else {
+                   
+                    for (let i = 0; i < attachments.length; i++) {
+                        const file = attachments[i];                        
+                        let xhr = new XMLHttpRequest();
+    				    
+        				xhr.open('POST', '/api/method/upload_file', true);
+        				xhr.setRequestHeader('X-Frappe-CSRF-Token', frappe.csrf_token);
+        				xhr.setRequestHeader('Accept', 'application/json');
+                        
+                        console.log(file);
+                        
+    				    let form_data = new FormData();
+        				
+        				form_data.append('file', file, file.name);
+        				form_data.append('is_private', 0);
+                        form_data.append('doctype', 'Quotation');
+        				form_data.append('docname', r.message);
+        				form_data.append('folder', 'Home/Attachments');
 
-					$("#cart-error")
-						.empty()
-						.html(msg || frappe._("Something went wrong!"))
-						.toggle(true);
-				} else {
-					$(btn).hide();
-					window.location.href = '/quotations/' + encodeURIComponent(r.message);
-				}
-			}
-		});
+        				xhr.send(form_data);
+                    }
+                    
+                    $(btn).hide();
+                    window.location.href = '/quotations/' + encodeURIComponent(r.message);
+                }
+            }
+        });
+
 	},
 
 	bind_coupon_code: function() {
